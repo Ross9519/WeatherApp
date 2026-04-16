@@ -1,0 +1,70 @@
+﻿<div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <h5 class="mb-3">Search City</h5>
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="alert alert-danger">
+                    @ErrorMessage
+                </div>
+            }
+
+            <input class="form-control mb-3"
+                   placeholder="Enter city name"
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+            <button class="btn btn-primary w-100 mb-2"
+                    @onclick="HandleSearch">
+                Search
+            </button>
+
+            <button class="btn btn-secondary w-100"
+                    @onclick="Close">
+                Cancel
+            </button>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public EventCallback<string> OnSearch { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    private string SearchText { get; set; } = string.Empty;
+
+    private bool IsLoading { get; set; }
+
+    private async Task HandleSearch()
+    {
+         Console.WriteLine("CLICKED SEARCH");
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            Console.WriteLine("EMPTY SEARCH");
+            return;
+        }
+
+        IsLoading = true;
+
+        await OnSearch.InvokeAsync(SearchText);
+
+        IsLoading = false;
+    }
+
+    private Task Close()
+    {
+        SearchText = string.Empty;
+        return OnClose.InvokeAsync();
+    }
+}

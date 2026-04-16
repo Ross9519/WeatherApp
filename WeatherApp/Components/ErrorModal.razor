@@ -1,0 +1,32 @@
+﻿<div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.6);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <h5 class="mb-3 text-danger">Error</h5>
+
+            <div class="alert alert-danger">
+                @Message
+            </div>
+
+            <button class="btn btn-primary w-100"
+                    @onclick="Close">
+                OK
+            </button>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private Task Close()
+    {
+        return OnClose.InvokeAsync();
+    }
+}

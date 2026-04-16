@@ -1,0 +1,164 @@
+﻿@page "/"
+@using WeatherApp.Models
+@inject WeatherApp.Orchestrators.Interfaces.IWeatherOrchestrator WeatherOrchestrator
+
+<div class="container py-4">
+
+    <h3 class="mb-3">Weather Dashboard</h3>
+
+    @if (_showError)
+    {
+        <WeatherApp.Components.ErrorModal Message="@_errorMessage"
+                    OnClose="CloseError" />
+    }
+
+    <div class="row g-3">
+
+        @foreach (var city in _cities)
+        {
+            <div class="col-md-4" @key="city.CityName">
+                <WeatherApp.Components.CityWeatherCard City="@city" OnRemove="@RemoveCity" />
+            </div>
+        }
+
+        @if (_cities.Count < MaxCities)
+        {
+            <div class="col-md-4">
+                <WeatherApp.Components.AddCityCard OnClick="@OpenSearch" />
+            </div>
+        }
+
+    </div>
+
+    @if (_showSearch)
+    {
+        <WeatherApp.Components.CitySearchModal
+            ErrorMessage="@_errorMessage"
+            OnSearch="@SearchCities"
+            OnClose="@CloseSearch" />
+    }
+
+    @if (_showSelection)
+    {
+        <WeatherApp.Components.CitySelectionModal
+            Cities="@_searchResults"
+            OnSelect="@SelectCity"
+            OnClose="@CloseSelection" />
+    }
+
+</div>
+
+@code {
+
+    private const int MaxCities = 5;
+
+    private List<WeatherResult> _cities = new();
+    private List<CitySearchResult> _searchResults = new();
+
+    private string _searchText = string.Empty;
+
+    private bool _showSearch;
+    private bool _showSelection;
+    private bool _showError;
+
+    private string? _errorMessage;
+
+    // =========================
+    // NAVIGATION / UI STATE
+    // =========================
+
+    private void OpenSearch()
+    {
+        ResetError();
+        _searchText = string.Empty;
+        _showSearch = true;
+    }
+
+    private void CloseSearch()
+    {
+        _showSearch = false;
+    }
+
+    private void CloseSelection()
+    {
+        _showSelection = false;
+    }
+
+    private void CloseError()
+    {
+        _showError = false;
+        _errorMessage = null;
+    }
+
+    private void ResetError()
+    {
+        _showError = false;
+        _errorMessage = null;
+    }
+
+    private void RemoveCity(WeatherResult city)
+    {
+        _cities = _cities
+            .Where(c => c != city)
+            .ToList();
+    }
+
+    // =========================
+    // SEARCH FLOW
+    // =========================
+
+    private async Task SearchCities(string query)
+    {
+        ResetError();
+
+        var result = await WeatherOrchestrator.SearchCitiesAsync(query);
+
+        if (!result.Success)
+        {
+            _errorMessage = result.ErrorMessage;
+            _showSearch = false;
+            _showError = true;
+            return;
+        }
+
+        _searchResults = result.Data?
+            .Where(r => !_cities.Any(c =>
+                c.CityName == r.Name &&
+                c.Country == r.Country))
+            .ToList() ?? new();
+
+        _showSearch = false;
+        _showSelection = true;
+    }
+
+    // =========================
+    // SELECTION FLOW
+    // =========================
+
+    private async Task SelectCity(CitySearchResult city)
+    {
+        ResetError();
+
+        if (_cities.Count >= MaxCities)
+        {
+            _errorMessage = "Maximum 5 cities reached.";
+            _showSelection = false;
+            _showError = true;
+            return;
+        }
+
+        var result = await WeatherOrchestrator.GetWeatherAsync(city);
+
+        if (!result.Success)
+        {
+            _errorMessage = result.ErrorMessage;
+            _showSelection = false;
+            _showError = true;
+            return;
+        }
+
+        _cities.Add(result.Data!);
+
+        _showSelection = false;
+    }
+}

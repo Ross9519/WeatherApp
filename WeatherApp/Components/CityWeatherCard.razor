@@ -1,0 +1,58 @@
+﻿@using WeatherApp.Models
+
+@namespace WeatherApp.Components
+
+@if (City is null)
+{
+    <div class="card shadow-sm h-100">
+        <div class="card-body">
+            <div class="text-danger">Invalid city data</div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm h-100">
+        <div class="card-body">
+
+            <h5 class="card-title">@(City?.CityName ?? "Unknown")</h5>
+
+            <div class="mt-2">
+                <div><b>Temperature:</b> @City.Temperature °C</div>
+                <div><b>Wind:</b> @City.WindSpeed km/h</div>
+                <div><b>Weather code:</b> @City.WeatherCode</div>
+            </div>
+
+            <div class="text-muted mt-2 small">
+                <span>@(City?.Country ?? "?")</span>
+                -
+                <span>@(City?.Region ?? "?")</span>
+            </div>
+
+            <div class="text-muted small">
+                @if (City.Time == default)
+                {
+                    <div class="text-muted small">N/A</div>
+                }
+                else
+                {
+                    <div class="text-muted small">@City.Time.ToString("HH:mm")</div>
+                }
+            </div>
+
+            <button class="btn btn-sm btn-danger mt-2"
+                    @onclick="() => OnRemove.InvokeAsync(City)">
+                Remove
+            </button>
+
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public WeatherResult? City { get; set; }
+
+    [Parameter]
+    public EventCallback<WeatherResult> OnRemove { get; set; }
+}

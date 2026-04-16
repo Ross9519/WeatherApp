@@ -1,0 +1,68 @@
+﻿<div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <h5 class="mb-3">Select City</h5>
+
+            @if (Cities == null || Cities.Count == 0)
+            {
+                <div class="alert alert-warning">
+                    No cities found.
+                </div>
+            }
+            else
+            {
+                <div class="list-group mb-3">
+                    @foreach (var city in Cities)
+                    {
+                        <button class="list-group-item list-group-item-action"
+                                @onclick="@(async () => await Select(city))">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div><b>@city.Name</b></div>
+                                    <div class="text-muted small">
+                                        @($"{city.Region ?? "?"} - {city.Country ?? "?"}")
+                                    </div>
+                                </div>
+                                <div class="text-muted small">
+                                    @city.Latitude , @city.Longitude
+                                </div>
+                            </div>
+                        </button>
+                    }
+                </div>
+            }
+
+            <button class="btn btn-secondary w-100"
+                    @onclick="Close">
+                Cancel
+            </button>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public IReadOnlyList<CitySearchResult> Cities { get; set; } = Array.Empty<CitySearchResult>();
+
+    [Parameter]
+    public EventCallback<CitySearchResult> OnSelect { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task Select(CitySearchResult city)
+    {
+        if (city == null)
+            return;
+
+        await OnSelect.InvokeAsync(city);
+    }
+
+    private Task Close()
+    {
+        return OnClose.InvokeAsync();
+    }
+}

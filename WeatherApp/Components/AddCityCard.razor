@@ -1,0 +1,17 @@
+﻿@namespace WeatherApp.Components
+
+<div class="card border-dashed shadow-sm h-100"
+     style="cursor:pointer; display:flex; align-items:center; justify-content:center;"
+     @onclick="OnClick">
+
+    <div class="text-center">
+        <div style="font-size:48px; line-height:1;">+</div>
+        <div class="text-muted">Add City</div>
+    </div>
+
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+}
